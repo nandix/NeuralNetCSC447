@@ -169,6 +169,74 @@ void NeuralNet::trainNetwork(vector<float> errors, vector<float> results)
 	}
 }
 
+void NeuralNet::readParameters( string filename )
+{
+	ifstream fin;
+
+	fin.open( filename.c_str() );
+
+	//read all lines into vector
+	string line;
+	while( getline( fin, line ))
+	{
+		lines.push_back( line );
+	}
+
+	//remove useless lines
+	lines.erase(lines.begin(),lines.begin()+21);
+	lines.erase(lines.begin()+7,lines.begin()+13);
+	lines.erase(lines.begin()+8,lines.begin()+16);
+	lines.erase(lines.begin()+11,lines.begin()+17);
+	lines.erase(lines.begin()+12,lines.begin()+18);
+	lines.erase(lines.begin()+14,lines.end());
+
+	//remove end comments on line
+	lines[0]=lines[0].substr(0,lines[0].find_first_of(" "));
+	lines[1]=lines[1].substr(0,lines[1].find_first_of(" "));
+	lines[2]=lines[2].substr(0,lines[2].find_first_of(" "));
+	lines[3]=lines[3].substr(0,lines[3].find_first_of(" "));
+	lines[4]=lines[4].substr(0,lines[4].find_first_of(" "));
+	lines[5]=lines[5].substr(0,lines[5].find_first_of(" "));
+	lines[6].substr(0,lines[6].find_first_of("#"));
+	lines[6].substr(0,lines[6].find_last_not_of(" \t")+1);
+	lines[8]=lines[8].substr(0,lines[8].find_first_of(" "));
+	lines[9]=lines[9].substr(0,lines[9].find_first_of(" "));
+	lines[10]=lines[10].substr(0,lines[10].find_first_of(" "));
+	lines[11]=lines[11].substr(0,lines[11].find_first_of(" "));
+
+	//initialize related values
+	weightFilename=lines[0];
+	epochs=atoi(lines[1].c_str());
+	learningRate=atof(lines[2].c_str());
+	momentum=atof(lines[3].c_str());
+	threshold=atof(lines[4].c_str());
+	numLayers=atoi(lines[5].c_str());
+	//lines[6] nodes per layer handle
+	for(int i=0;i<numLayers+1;i++)
+	{
+		string temp;
+		if(i == numLayers-1)
+		{
+			nodesPerLayer.push_back(atoi(lines[6].c_str()));
+		}
+		else
+		{
+			temp=lines[6].substr(0,lines[6].find_first_of(" "));
+			nodesPerLayer.push_back(atoi(temp.c_str()));
+			lines[6]=lines[6].substr(lines[6].find_first_of(" ")+1);
+		}
+	}
+	trainingFilename=lines[7];
+	yearsBurned=atoi(lines[8].c_str());
+	monthsData=atoi(lines[9].c_str());
+	endMonth=atoi(lines[10].c_str());
+	numOutputClasses=atoi(lines[11].c_str());
+	mediumCutoff=atoi(lines[12].c_str());
+	highCutoff=atoi(lines[13].c_str());
+
+	//handle reading data file for only required data
+}
+
 
 
 
