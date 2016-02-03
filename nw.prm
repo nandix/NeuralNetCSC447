@@ -1,0 +1,58 @@
+#************************** nw.prm ***********************************
+#
+# Parameter file for ANN fire severity project: Northwest climate region.
+#
+# Modify this parameter file as needed.
+#
+# The order of fields is specified in the example below, and cannot be changed.
+# Fields are separated by white space (or commas).
+# Anything following # (or %) on a line is ignored as a comment.
+#
+# Class:        CSC447/547 Artificial Intelligence
+# Author:       John M. Weiss, Ph.D.
+# Date:         Jan 2016
+#
+#*******************************************************************************
+
+#---------------
+# ANN parameters
+#---------------
+
+weights.wts     # name of ANN weight file
+1000            # number of training epochs
+0.4             # learning rate
+0.8             # momentum
+0.01            # threshold for ANN error (training cutoff OR testing acceptance)
+2               # layers of adjustable weights (one less than layers of nodes)
+25 3 3          # how many nodes in each layer
+
+#-------------------------------
+# training and testing data file
+#-------------------------------
+
+PDSI_NW_1998_2015.csv
+
+#------------------------------------------
+# input feature vector info:
+# years of burned acreage,
+# months of PDSI data (no fewer than # of input layer nodes),
+# and end month of current year (1=Jan, 2=Feb, 3=Mar, etc.) for PDSI data
+#------------------------------------------
+
+1       # years of burned acreage
+24      # months of PDSI data
+3       # end month of current year (1=Jan, 2=Feb, 3=Mar, etc.)
+
+#------------------------------------------
+# output class info:
+# number of classes (no fewer than # of input layer nodes)
+# class names and positions (zero based)
+#------------------------------------------
+
+3       # number of classes
+
+# fire severity cutoffs (burned acres, low and high)
+2000
+20000
+
+#************************** Parameter.prm ***********************************
