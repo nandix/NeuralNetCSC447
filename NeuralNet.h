@@ -5,6 +5,9 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include <string>
+#include <fstream>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -33,10 +36,24 @@ private:
 	float learningRate;
 	float momentum;
 
+	//Variables for reading from the parameter file
+	vector<string> lines;		//vector to old all the lines to easily remove the useless ones
+	string weightFilename;		//filename for storing weights
+	int epochs;					//number of training epochs
+	float threshold;			//error threshhold
+	string trainingFilename;	//file containing training and testing data
+	int yearsBurned;			//number of previous years to use for burned acreage
+	int monthsData;				//how many previous months data to use
+	int endMonth;				//the last usable month of the current year
+	int numOutputClasses;		//number of output classes
+	int mediumCutoff;			//minimum burned acreage to be considered medium
+	int highCutoff;				//minimum burned acreage to be considered high
+
 	float initWeight();
 	float activationFunction( float x );
 	float activationFunctionPrime( float x );
 	void updateWeights();
+	void readParameters( string filename );
 };
 
 #endif
