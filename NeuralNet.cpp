@@ -344,7 +344,53 @@ void NeuralNet::readParameters( string filename )
 	//handle reading data file for only required data
 }
 
+vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
+{
+	ifstream fin;
 
+	fin.open(trainingFilename.c_str());
+
+	vector<float> values;
+	vector<string> ind;
+	string month;
+
+	getline(fin, month);
+	getline(fin, month);
+
+	while( getline(fin, month) )
+	{
+		ind=split(month, ',');
+		for(int i=0;i<ind.size();i++)
+		{
+			values.push_back(atof(ind[i].c_str()));
+		}
+		data.push_back(values);
+		values.clear();
+	}
+
+	fin.close();
+
+	for(int i=0;i<data.size();i++)
+	{
+		data[i].erase(data[i].begin());
+		data[i].insert(data[i].begin()+1,1);
+	}
+
+	return data;
+}
+
+vector<std::string> NeuralNet::split(const string &text, char sep)
+{
+	vector<std::string> tokens;
+	size_t start = 0, end = 0;
+	while ((end = text.find(sep, start)) != string::npos)
+	{
+	tokens.push_back(text.substr(start, end - start));
+	start = end + 1;
+	}
+	tokens.push_back(text.substr(start));
+	return tokens;
+}
 
 float NeuralNet::activationFunction(float x)
 {
@@ -353,9 +399,10 @@ float NeuralNet::activationFunction(float x)
 	return f;
 }
 
-
-
-
+int main(int argc, char** argv)
+{
+	return 0;
+}
 
 
 
