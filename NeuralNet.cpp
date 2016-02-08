@@ -7,7 +7,7 @@ NeuralNet::NeuralNet( int nLayers, vector<int> nPerLayer )
 	// Seed our random number generator
     srand( time(NULL) );
 	initRange = 0.2;
-	steepness = 1.0;
+	steepness = 5.0;
 	learningRate = 0.4;
 	momentum = 0.8;
 
@@ -194,7 +194,7 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 		float yK = results[numLayers-1][to];
 
 		// Compute deltaK
-		deltaK[to] = yK * (1-yK) * errors[to];
+		deltaK[to] = steepness * yK * (1-yK) * errors[to];
 
 		// For each node into the output layer...
 		// j = from
@@ -241,7 +241,7 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 			float yJ = results[layer][to];
 			// cout << "yJ is " << yJ << endl;
 
-			deltaJ[to] = yJ * (1-yJ) * sigma;
+			deltaJ[to] = steepness * yJ * (1-yJ) * sigma;
 			// cout << "delJ = " << deltaJ[to] << endl;
 
 			// Update weights into node j
@@ -276,72 +276,6 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 				// cout << "Updating " << updateDeltas[layer][to][from] << endl;
 				networkWeights[layer][to][from] += updateDeltas[layer][to][from];
 			}
-}
-
-void NeuralNet::readParameters( string filename )
-{
-	ifstream fin;
-
-	fin.open( filename.c_str() );
-
-	//read all lines into vector
-	string line;
-	while( getline( fin, line, '\n' ))
-	{
-		string hash;
-		hash.assign(line,0,1);
-		if(!line.empty() && line != "\n" && hash != "#")
-		{
-			lines.push_back( line );
-		}
-	}
-
-	fin.close();
-
-	//remove end comments on line
-	lines[0]=lines[0].substr(0,lines[0].find_first_of(" \t"));
-	lines[1]=lines[1].substr(0,lines[1].find_first_of(" \t"));
-	lines[2]=lines[2].substr(0,lines[2].find_first_of(" \t"));
-	lines[3]=lines[3].substr(0,lines[3].find_first_of(" \t"));
-	lines[4]=lines[4].substr(0,lines[4].find_first_of(" \t"));
-	lines[5]=lines[5].substr(0,lines[5].find_first_of(" \t"));
-	lines[6]=lines[6].substr(0,lines[6].find_last_of("0123456789")+1);
-	lines[8]=lines[8].substr(0,lines[8].find_first_of(" \t"));
-	lines[9]=lines[9].substr(0,lines[9].find_first_of(" \t"));
-	lines[10]=lines[10].substr(0,lines[10].find_first_of(" \t"));
-	lines[11]=lines[11].substr(0,lines[11].find_first_of(" \t"));
-
-	//initialize related values
-	weightFilename=lines[0];
-	epochs=atoi(lines[1].c_str());
-	learningRate=atof(lines[2].c_str());
-	momentum=atof(lines[3].c_str());
-	threshold=atof(lines[4].c_str());
-	numLayers=atoi(lines[5].c_str());
-	//lines[6] nodes per layer handle
-	for(int i=0;i<numLayers+1;i++)
-	{
-		string temp;
-		if(i == numLayers)
-		{
-			nodesPerLayer.push_back(atoi(lines[6].c_str()));
-		}
-		else
-		{
-			temp=lines[6].substr(0,lines[6].find_first_of(" "));
-			nodesPerLayer.push_back(atoi(temp.c_str()));
-			lines[6]=lines[6].substr(lines[6].find_first_of(" ")+1);
-		}
-	}
-	trainingFilename=lines[7];
-	yearsBurned=atoi(lines[8].c_str());
-	monthsData=atoi(lines[9].c_str());
-	endMonth=atoi(lines[10].c_str());
-	numOutputClasses=atoi(lines[11].c_str());
-	mediumCutoff=atoi(lines[12].c_str());
-	highCutoff=atoi(lines[13].c_str());
-
-	//handle reading data file for only required data
 }
 
 
