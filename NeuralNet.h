@@ -7,7 +7,6 @@
 #include <time.h>
 #include <string>
 #include <fstream>
-#include <stdlib.h>
 
 using namespace std;
 
@@ -37,6 +36,7 @@ private:
 	float momentum;
 
 	//Variables for reading from the parameter file
+	vector< vector<float> > data;  //2d vector holding data file. oldest dates at element 0
 	vector<string> lines;		//vector to old all the lines to easily remove the useless ones
 	string weightFilename;		//filename for storing weights
 	int epochs;					//number of training epochs
@@ -49,9 +49,12 @@ private:
 	int mediumCutoff;			//minimum burned acreage to be considered medium
 	int highCutoff;				//minimum burned acreage to be considered high
 
+	int main(int argc, char** argv);
 	float initWeight();
 	float activationFunction( float x );
 	float activationFunctionPrime( float x );
+	vector< vector<float> > readDataFile(string dataFilename);
+	vector<std::string> split(const string &text, char sep);
 	void updateWeights();
 	void readParameters( string filename );
 };
