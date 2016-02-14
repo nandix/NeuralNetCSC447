@@ -373,8 +373,61 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 	for(int i=0;i<data.size();i++)
 	{
 		data[i].erase(data[i].begin());
-		data[i].insert(data[i].begin()+1,1);
 	}
+
+	int max = data[0][1];
+	int min = data[0][1];
+	int burnMax = data[0][0];
+	int burnMin = data[0][0];
+	for(int i=0;i<data.size();i++)
+	{
+		for(int j=0;j<data[i].size();j++)
+		{
+			if(j == 0)
+			{
+				if(data[i][j] < burnMin)
+				{
+					burnMin = data[i][j];
+				}
+
+				if(data[i][j] > burnMax)
+				{
+					burnMax = data[i][j];
+				}
+			}
+			else
+			{
+				if(data[i][j] < min)
+				{
+					min = data[i][j];
+				}
+
+				if(data[i][j] > max)
+				{
+					max = data[i][j];
+				}
+			}
+		}
+	}
+
+	for(int i=0;i<data.size();i++)
+	{
+		for(int j=0;j<data[i].size();j++)
+		{
+			if(j == 0)
+			{
+				data[i][j] = (data[i][j] - burnMin)/(burnMax - burnMin);
+			}
+			else
+			{
+				data[i][j] = (data[i][j] - min)/(max - min);
+			}
+		}
+	}
+
+	//keep track of min and max and then walk through all the data and normalize.
+	//keep track of min and max for burned acreage to normalize
+	//burned acreage is always element [n][0]
 
 	return data;
 }
