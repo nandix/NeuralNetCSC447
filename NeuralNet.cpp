@@ -43,6 +43,45 @@ NeuralNet::NeuralNet( int nLayers, vector<int> nPerLayer )
 	}
 }
 
+NeuralNet::NeuralNet( const char* fileName )
+{
+	// Seed our random number generator
+    srand( time(NULL) );
+	initRange = 0.2;
+	steepness = 5.0;
+	learningRate = 0.4;
+	momentum = 0.0;
+    readParameters(fileName);
+
+	// Initialize the input layer
+	inputLayer.resize( nodesPerLayer[0] );
+
+	// Create the correct number of layer weights
+	networkWeights.resize( numLayers-1 );
+
+	// For each layer beyond the input layer...
+	for( int layer = 1; layer < numLayers; layer++ )
+	{
+		// Resize the layer for the correct number of nodes.
+		networkWeights[ layer-1 ].resize( nodesPerLayer[layer] + 1 );
+
+		// Initialize for each node in that layer
+		int node;
+		for( node = 0; node < nodesPerLayer[layer]; node++ )
+		{
+			// Initialize the correct number of input weights, plus 1 for the bias input
+			networkWeights[ layer-1 ][ node ].resize( nodesPerLayer[layer-1] + 1 );
+
+			// For each node in the layer, initialize the input weights
+			for( int wNum = 0; wNum <= nodesPerLayer[layer-1]; wNum++ )
+			{
+				// Initalize to small random values
+				networkWeights[ layer-1 ][ node ][ wNum ] = initWeight();
+			}
+		}
+	}
+}
+
 NeuralNet::~NeuralNet()
 {
 
@@ -92,15 +131,14 @@ float NeuralNet::initWeight()
 vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< float > outputs )
 {
 
-	// Make our input vector the old output vector (think of this as output from the input layer) 
-	//	for consistency in the loop 
+	// Make our input vector the old output vector (think of this as output from the input layer)
+	//	for consistency in the loop
 	vector<float> tempOut = inputs;
 	vector< vector<float> > perceptronOutputs;
 
 	// For each layer
 	for (int layer = 0; layer < numLayers-1; ++layer)
 	{
-		
 		// Create temporary output values
 		vector<float> tempIn = tempOut;
 		tempIn.push_back(1.0);
@@ -128,7 +166,7 @@ vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< 
 		for( int to=0; to < nodesPerLayer[layer+1]; to++ )
 		{
 			// Evaluate the summation from the previous layer's outputs
-			for( int from=0; from < nodesPerLayer[layer]+1; from++ )
+			for( int from=0; from < nodesPerLayer[layer]; from++ )
 			{
 				tempOut[to] += networkWeights[layer][to][from]*tempIn[from];
 			}
@@ -136,13 +174,10 @@ vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< 
 			tempOut[to] = activationFunction( tempOut[to] );
 		}
 		// cout << "SIZE: " << tempOut.size() << endl;
-
-
 	}
 
-	// Push the final 
+	// Push the final
 	perceptronOutputs.push_back( tempOut );
-
 	// cout << "SIZE: " << tempOut.size() << endl;
 	return perceptronOutputs;
 }
@@ -225,7 +260,7 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 			// Compute the summation
 			float sigma = 0;
 
-			// Evaluate 
+			// Evaluate
 			// cout << "Summing ";
 			for( int k=0; k < nodesPerLayer[layer+1]; k++ )
 			{
@@ -246,7 +281,7 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 
 			// Update weights into node j
 			// i = from
-			for( int from=0; from < nodesPerLayer[layer-1]+1; from++ )
+			for( int from=0; from < nodesPerLayer[layer-1]; from++ )
 			{
 				// cout << "Updating layer " << layer << " from " << from << " to " << to << endl;
 				float yI = results[layer-1][from];
@@ -317,7 +352,7 @@ void NeuralNet::readParameters( string filename )
 	learningRate=atof(lines[2].c_str());
 	momentum=atof(lines[3].c_str());
 	threshold=atof(lines[4].c_str());
-	numLayers=atoi(lines[5].c_str());
+	numLayers=atoi(lines[5].c_str()) + 1;
 	//lines[6] nodes per layer handle
 	for(int i=0;i<numLayers+1;i++)
 	{
@@ -451,7 +486,3 @@ float NeuralNet::activationFunction(float x)
 	// cout << "Activation function for x = " << x << " is " << f << endl;
 	return f;
 }
-
-
-
-

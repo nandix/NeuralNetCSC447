@@ -1,48 +1,44 @@
-
-/*
-	Program: XORNet.cpp
-*/
 #include "NeuralNet.cpp"
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
 int main(int argc, char const *argv[])
 {
 	// Will be read in from a file in the final program
-	int nLayers = 3;
-	float errorThreshold = 0.01;
-	float epochThreshold = 10000;
 
-	float nSamples = 4;
-	float inSize = 2;
-	float outSize = 1;
+	NeuralNet net( argv[1] );
+
+	int nLayers = net.numLayers;
+	float errorThreshold = net.threshold;
+	float epochThreshold = net.epochs;
+
+	float nSamples = net.nodesPerLayer[0];
+	float inSize = net.monthsData;
+	float outSize = net.numOutputClasses;
 
 	vector<int> nPerLayer(nLayers);
-	nPerLayer[0] = inSize;
-	nPerLayer[1] = 5;
-	nPerLayer[2] = outSize;
+	vector<vector< float > > inputs(nSamples, vector<float>(inSize));
+	vector<vector< float > > outputs(nSamples, vector<float>(outSize));
 
-	NeuralNet net( nLayers, nPerLayer );
+	vector<vector< float > > data = net.readDataFile(net.trainingFilename);
 
-
-    vector<vector< float > > inputs(nSamples, vector<float>(inSize) );
-	vector<vector< float > > outputs(nSamples, vector<float>(outSize) );
-	inputs[0][0] = 0;
-	inputs[0][1] = 0;
-	inputs[1][0] = 0;
-	inputs[1][1] = 1;
-	inputs[2][0] = 1;
-	inputs[2][1] = 0;
-	inputs[3][0] = 1;
-	inputs[3][1] = 1;
-
-	outputs[0][0] = 0;
-	outputs[1][0] = 1;
-	outputs[2][0] = 1;
-	outputs[3][0] = 0;
-
+	if (nSamples > data.size())
+	{
+		cout << "Number of samples invalid in parameter file. Using max samples"
+			<< endl;
+		nSamples = data.size() - 1;
+	}
+	for (int i = 0; i < nSamples; i++)
+	{
+		for (int j = 0; j < inSize; j++)
+		{
+			int row = (int)(j / data[i].size()) + i;
+			int column = j % data[row].size();
+			inputs[i][j] = data[row][column];
+		}
+	}
 
 	net.printNetwork();
 
@@ -150,8 +146,5 @@ int main(int argc, char const *argv[])
 
 
 	cout << "The program actually finished" << endl;
-
-
-
 	return 0;
 }
