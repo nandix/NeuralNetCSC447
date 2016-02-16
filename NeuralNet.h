@@ -29,6 +29,7 @@ private:
 	// Vector to hold weights for network indexed as:
 	// 	networkWeights[ layer index ][ node index i ][ weight from previous node i this, j ] 
 	vector<vector<vector< float > > > networkWeights; // Lists of nodes in each layer
+	vector< vector< vector<float> > > wPrevious; // Updates from previous training, used with momentum
 
 	float initRange; // Initial weights range from -initRange/2 to +initRange/2
 	float steepness; // Steepness of the sigmoid transfer function
