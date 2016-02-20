@@ -1,6 +1,7 @@
 #include "NeuralNet.cpp"
 #include <algorithm>
 #include <iostream>
+#include <math.h>
 
 using namespace std;
 
@@ -23,8 +24,12 @@ int main(int argc, char const *argv[])
 	vector<int> nPerLayer(nLayers);
 	vector<vector< float > > data = net.readDataFile(net.trainingFilename);
 
-	if (net.monthsData / 12 > net.yearsBurned)
-		nSamples = data.size() - net.monthsData / 12 + 1;
+	int yearsPerSample = ceil(net.monthsData / 12.0);
+	if (net.endMonth != 12)
+		yearsPerSample++;
+
+	if (yearsPerSample >= net.yearsBurned)
+		nSamples = data.size() - yearsPerSample + 1;
 	else
 		nSamples = data.size() - net.yearsBurned + 1;
 
