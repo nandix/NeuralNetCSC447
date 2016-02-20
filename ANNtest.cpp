@@ -11,32 +11,46 @@ int main(int argc, char const *argv[])
 	NeuralNet net( argv[1] );
 
 	int nLayers = net.numLayers;
+	int row, column;
+	int lastYearIndex;
 	float errorThreshold = net.threshold;
 	float epochThreshold = net.epochs;
+	int nSamples;
 
-	float nSamples = net.nodesPerLayer[0];
-	float inSize = net.monthsData;
+	float inSize = net.monthsData + net.yearsBurned;
 	float outSize = net.numOutputClasses;
 
 	vector<int> nPerLayer(nLayers);
+	vector<vector< float > > data = net.readDataFile(net.trainingFilename);
+
+	if (net.monthsData / 12 > net.yearsBurned)
+		nSamples = data.size() - net.monthsData / 12 + 1;
+	else
+		nSamples = data.size() - net.yearsBurned + 1;
+
+
 	vector<vector< float > > inputs(nSamples, vector<float>(inSize));
 	vector<vector< float > > outputs(nSamples, vector<float>(outSize));
 
-	vector<vector< float > > data = net.readDataFile(net.trainingFilename);
+	lastYearIndex = data.size() - 1;
 
-	if (nSamples > data.size())
-	{
-		cout << "Number of samples invalid in parameter file. Using max samples"
-			<< endl;
-		nSamples = data.size() - 1;
-	}
+
 	for (int i = 0; i < nSamples; i++)
 	{
-		for (int j = 0; j < inSize; j++)
+		column = net.endMonth;
+		row = lastYearIndex;
+
+		for (int j = 0; j < net.yearsBurned; j++)
+			inputs[i][j] = data[lastYearIndex - i][0];
+
+		for (int j = 1; j < inSize; j++)
 		{
-			int row = (int)(j / data[i].size()) + i;
-			int column = j % data[row].size();
 			inputs[i][j] = data[row][column];
+			if (--column < 1)
+			{
+				column = 12;
+				row--;
+			}
 		}
 	}
 
