@@ -2,6 +2,18 @@
 #include "NeuralNet.h"
 #include <cmath>
 
+/*******************************************************************************
+* Function: NeuralNet()
+*
+* Description: This is an initializer of the NeuralNet class. It sets up the
+*   input vector to be the correct size, and creates the vector for the weights
+*   between the layers of the net.
+*
+* Parameters:
+*   nLayers -   The number of layers in the net
+*   nPerLayer - A vector containing the number of nodes in each layer
+*
+*******************************************************************************/
 NeuralNet::NeuralNet( int nLayers, vector<int> nPerLayer )
 {
 	// Seed our random number generator
@@ -43,14 +55,24 @@ NeuralNet::NeuralNet( int nLayers, vector<int> nPerLayer )
 	}
 }
 
+/*******************************************************************************
+* Function: NeuralNet()
+*
+* Description: This is an initializer of the NeuralNet class. First, it calls a
+*   function to populate the class variables from a parameter file. Then, it
+*   sets up the input vector to be the correct size, and creates the vector for
+*   the weights between the layers of the net.
+*
+* Parameters:
+*   fileName - The name of the parameter file
+*
+*******************************************************************************/
 NeuralNet::NeuralNet( const char* fileName )
 {
 	// Seed our random number generator
     srand( time(NULL) );
 	initRange = 0.2;
 	steepness = 5.0;
-	learningRate = 0.4;
-	momentum = 0.0;
     readParameters(fileName);
 
 	// Initialize the input layer
@@ -82,14 +104,27 @@ NeuralNet::NeuralNet( const char* fileName )
 	}
 }
 
+/*******************************************************************************
+* Function: ~NeuralNet()
+*
+* Description: This is the destructor for the class. It is called automatically.
+*
+*******************************************************************************/
 NeuralNet::~NeuralNet()
 {
 
 }
 
+/*******************************************************************************
+* Function: printNetwork()
+*
+* Description: This is a method that prints the current network weights plus a
+*   few pieces of information about the network, such as the number of Layers
+*   and the number of nodes in each layer.
+*
+*******************************************************************************/
 void NeuralNet::printNetwork()
 {
-
 	cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
 
 	cout << "N Layers: " << numLayers << endl;
@@ -118,6 +153,12 @@ void NeuralNet::printNetwork()
 
 }
 
+/*******************************************************************************
+* Function: initWeight()
+*
+* Description: This function simply returns a random value.
+*
+*******************************************************************************/
 // Initialize a weight to a small value
 float NeuralNet::initWeight()
 {
@@ -128,6 +169,16 @@ float NeuralNet::initWeight()
 	// return 0.1;
 }
 
+/*******************************************************************************
+* Function: EvaluateNet()
+*
+* Description: This function evaluates the net.
+*
+* Parameters:
+*   inputs    - This represents the first layer in the neural net
+*   nPerLayer - This is a vector that contains the number of nodes in each layer
+*
+*******************************************************************************/
 vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< float > outputs )
 {
 
@@ -182,8 +233,16 @@ vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< 
 	return perceptronOutputs;
 }
 
-
-
+/*******************************************************************************
+* Function: trainNetwork()
+*
+* Description: This trains the network..
+*
+* Parameters:
+*   nLayers -   The number of layers in the net
+*   nPerLayer - A vector containing the number of nodes in each layer
+*
+*******************************************************************************/
 void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > results)
 {
 	// Create a vector for weight changes for each layer
@@ -313,6 +372,18 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 			}
 }
 
+/*******************************************************************************
+* Function: readParameters()
+*
+* Description: This function populates the variables in the neural net class.
+*   The parameters are defined in a structured parameter file. Lines beginning
+*   with a '#' are considered comments in the parameter file and are removed at
+*   the beginning of this function.
+*
+* Parameters:
+*   filename - The name of the data file
+*
+*******************************************************************************/
 void NeuralNet::readParameters( string filename )
 {
 	ifstream fin;
@@ -323,6 +394,7 @@ void NeuralNet::readParameters( string filename )
 	string line;
 	while( getline( fin, line, '\n' ))
 	{
+        //remove comments and blank lines
 		string hash;
 		hash.assign(line,0,1);
 		if(!line.empty() && line != "\n" && hash != "#")
@@ -379,6 +451,18 @@ void NeuralNet::readParameters( string filename )
 	//handle reading data file for only required data
 }
 
+/*******************************************************************************
+* Function: readDataFile()
+*
+* Description: This function is used to read the data file containing the PDSI
+*   information. It discards the first two lines, which are headings on the
+*   data table. Then it reads in each value from the data file and inserts them
+*   into the data vector. Once this is finished, all of the data is normalized.
+*
+* Parameters:
+*   filename - The name of the parameter file
+*
+*******************************************************************************/
 vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 {
 	ifstream fin;
@@ -467,19 +551,41 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 	return data;
 }
 
+/*******************************************************************************
+* Function: split()
+*
+* Description: This function is used to separate a string into multiple pieces.
+*   It splits the string after each time it encounters the character passed in
+*   to the sep variable. It returns a vector of each of the substrings.
+*
+* Parameters:
+*   text - The string that is being split
+*   sep  - The character that is used as the separator to split on
+*
+*******************************************************************************/
 vector<std::string> NeuralNet::split(const string &text, char sep)
 {
 	vector<std::string> tokens;
 	size_t start = 0, end = 0;
 	while ((end = text.find(sep, start)) != string::npos)
 	{
-	tokens.push_back(text.substr(start, end - start));
-	start = end + 1;
+    	tokens.push_back(text.substr(start, end - start));
+    	start = end + 1;
 	}
 	tokens.push_back(text.substr(start));
 	return tokens;
 }
 
+/*******************************************************************************
+* Function: activationFunction()
+*
+* Description: This function simply applies an activation function to the
+*   variable passed into it. 
+*
+* Parameters:
+*   x - The variable currently being acted upon
+*
+*******************************************************************************/
 float NeuralNet::activationFunction(float x)
 {
 	float f = 1.0 / (1.0 + exp(-1.0 * steepness * x));

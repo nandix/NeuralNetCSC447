@@ -13,11 +13,13 @@ using namespace std;
 class NeuralNet
 {
 public:
+	//Constructors
 	NeuralNet( int nLayers, vector<int> nPerLayer );
 	NeuralNet( const char* fileName );
+	//Destructor
 	~NeuralNet();
 
-	void printNetwork();
+	void printNetwork(); //Outputs the network and some statistics
 	void trainNetwork(vector<float> errors, vector< vector<float> > results);
 	void readParameters( string filename );
 	vector< vector<float> > readDataFile(string dataFilename);

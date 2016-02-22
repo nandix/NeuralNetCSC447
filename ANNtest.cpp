@@ -5,6 +5,30 @@
 
 using namespace std;
 
+/*******************************************************************************
+* Function: main()
+*
+* Description: This file tests the neural net class using the parameters
+* 	specified in the parameter file. The parameter file is passed as the first
+* 	argument on the command line. This function starts by initializing the
+* 	neural net class with the name of the parameter file. This file is then read
+* 	and it populates the class variables of the neural net. After that, it
+* 	builds a 2 dimensional vector of normalized data points. The size of the
+* 	rows are defined in the parameter file and the number of rows is based on
+* 	the size of the input file. After that, the input rows are fed into the
+* 	neural net one at a time. Then the net is tested for accuracy. This process
+* 	is repeated until the net is more accurate than the threshhold defined in
+* 	the parameter file, or until it has reached the number of epochs defined in
+* 	the parameter file.
+*
+* Parameters:
+* 	argc - The number of arguments passed in on the command line
+* 	argv - An array of the command line arguments
+* 		argv[0] - The name of the program
+* 		argv[1] - The name of the parameter file
+*
+*
+*******************************************************************************/
 int main(int argc, char const *argv[])
 {
 	// Will be read in from a file in the final program
@@ -18,12 +42,14 @@ int main(int argc, char const *argv[])
 	float epochThreshold = net.epochs;
 	int nSamples;
 
+	//Size of the input and output layers
 	float inSize = net.monthsData + net.yearsBurned;
 	float outSize = net.numOutputClasses;
 
 	vector<int> nPerLayer(nLayers);
 	vector<vector< float > > data = net.readDataFile(net.trainingFilename);
 
+	//Get the number of possible samples
 	int yearsPerSample = ceil(net.monthsData / 12.0);
 	if (net.endMonth != 12)
 		yearsPerSample++;
@@ -39,7 +65,7 @@ int main(int argc, char const *argv[])
 
 	lastYearIndex = data.size() - 1;
 
-
+	//Populate the input vectors
 	for (int i = 0; i < nSamples; i++)
 	{
 		column = net.endMonth;
