@@ -90,7 +90,7 @@ int main(int argc, char const *argv[])
 	if (yearsPerSample >= net.yearsBurned)
 		nSamples = data.size() - yearsPerSample + 1;
 	else
-		nSamples = data.size() - net.yearsBurned + 1;
+		nSamples = data.size() - net.yearsBurned;
 
 
 	vector<vector< float > > inputs(nSamples, vector<float>(inSize));
