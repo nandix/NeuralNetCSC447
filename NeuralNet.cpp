@@ -72,7 +72,7 @@ NeuralNet::NeuralNet( const char* fileName )
 	// Seed our random number generator
     srand( time(NULL) );
 	initRange = 0.2;
-	steepness = 5.0;
+	steepness = 1.0;
     readParameters(fileName);
 
 	// Initialize the input layer
@@ -494,10 +494,10 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 		data[i].erase(data[i].begin());
 	}
 
-	int max = data[0][1];
-	int min = data[0][1];
-	int burnMax = data[0][0];
-	int burnMin = data[0][0];
+	float max = data[0][1];
+	float min = data[0][1];
+	burnMax = data[0][0];
+	burnMin = data[0][0];
 	for(int i=0;i<data.size();i++)
 	{
 		for(int j=0;j<data[i].size();j++)
@@ -541,12 +541,21 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 			{
 				data[i][j] = (data[i][j] - min)/(max - min);
 			}
+
+			if( data[i][j] < 0 || data[i][j] > 1 )
+			{
+				cout << "BAD NORMALIZATION: (" << i << ", " << j << ") : " << data[i][j] << endl;
+				cout << "Params: " << burnMin << " " << burnMax << " " << min << " " << max << endl;
+			}
+			
 		}
 	}
 
 	//keep track of min and max and then walk through all the data and normalize.
 	//keep track of min and max for burned acreage to normalize
 	//burned acreage is always element [n][0]
+
+
 
 	return data;
 }

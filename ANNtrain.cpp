@@ -98,18 +98,51 @@ int main(int argc, char const *argv[])
 
 	lastYearIndex = data.size() - 1;
 
+
+	// cout << "DATA: " << endl;
+	// for( int i=0; i < data.size(); i++ )
+	// {
+	// 	for( int j=0; j < data[i].size(); j++ )
+	// 	{
+	// 		cout << " " << data[i][j];
+	// 	}
+	// 	cout << endl;
+	// }
+	// cout << endl;
+
+
+	row = lastYearIndex;
+
 	//Populate the input vectors
 	for (int i = 0; i < nSamples; i++)
 	{
+
 		column = net.endMonth;
-		row = lastYearIndex;
+		row = lastYearIndex - i;
 
 		for (int j = 0; j < net.yearsBurned; j++)
-			inputs[i][j] = data[lastYearIndex - i][0];
+		{
+			inputs[i][j] = data[lastYearIndex - i - j][0];
 
-		for (int j = 1; j < inSize; j++)
+			float unNormalizeConst = (net.burnMax - net.burnMin);
+			if( inputs[i][j]*unNormalizeConst + net.burnMin < net.mediumCutoff )
+			{
+				outputs[i][0] = 1;
+			}
+			else if( inputs[i][j]*unNormalizeConst + net.burnMin < net.highCutoff )
+			{
+				outputs[i][1] = 1;
+			}
+			else
+			{
+				outputs[i][2] = 1;
+			}
+		}
+
+		for (int j = net.yearsBurned - 1; j < inSize; j++)
 		{
 			inputs[i][j] = data[row][column];
+
 			if (--column < 1)
 			{
 				column = 12;
@@ -242,13 +275,62 @@ int main(int argc, char const *argv[])
 		cout << endl;
 	}*/
 
-	/*for( int i=0; i < inputs.size(); i++ )
+	for( int i=0; i < inputs.size(); i++ )
 	{
 		vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
-		cout << "In | Out | Net: " << inputs[i][0] << " " << inputs[i][1] << " | "
-				<< outputs[i][0] << " | " << results[nLayers-1][0] << endl;
 
-	}*/
+		int predictedIndex = -1;
+		int maxPrediction = 0;
+		for( int j=0; j < results[nLayers-1].size(); j++ )
+		{
+			if( results[nLayers-1][j] > maxPrediction )
+			{
+				predictedIndex = j;
+			}
+
+		}
+		for( int j=0; j < results[nLayers-1].size(); j++ )
+		{
+			if( j != predictedIndex )
+			{
+				results[nLayers-1][j] = 0;
+			}
+			else
+			{
+				results[nLayers-1][j] = 1;
+			}
+		}
+
+		cout << "Sample " << i << ":" << endl;
+
+		cout << "   Inputs :";
+		for( int j=0; j < inputs[i].size(); j++ )
+		{
+			cout << "  " <<  inputs[i][j];
+
+		}
+		cout << endl;
+		
+		cout << "   outputs:";
+		for( int j=0; j < outputs[i].size(); j++ )
+		{
+			cout << "  " <<  outputs[i][j];
+
+		}
+		cout << endl;
+		
+		cout << "   Results:";
+		for( int j=0; j < results[nLayers-1].size(); j++ )
+		{
+			cout << "  " <<  results[nLayers-1][j];
+
+		}
+		cout << endl;
+
+		// cout << "In | Out | Net: " << inputs[i][0] << " " << inputs[i][1] << " | "
+		// 		<< outputs[i][0] << " | " << results[nLayers-1][0] << endl;
+
+	}
 	// for( int i=0; i < inputs.size(); i++ )
 	// {
 	// 	vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
@@ -257,7 +339,9 @@ int main(int argc, char const *argv[])
 
 	// }
 
-	//net.printNetwork();
+	net.printNetwork();
+	cout << "BURN BABY BURN: " << net.burnMin << " " << net.burnMax << endl;
+
 
 
 	//cout << "The program actually finished" << endl;

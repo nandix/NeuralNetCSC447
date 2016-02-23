@@ -51,8 +51,11 @@ public:
 	int monthsData;				//how many previous months data to use
 	int endMonth;				//the last usable month of the current year
 	int numOutputClasses;		//number of output classes
-	int mediumCutoff;			//minimum burned acreage to be considered medium
-	int highCutoff;				//minimum burned acreage to be considered high
+	float mediumCutoff;			//minimum burned acreage to be considered medium
+	float highCutoff;				//minimum burned acreage to be considered high
+
+	float burnMin;
+	float burnMax;
 
 
 private:
