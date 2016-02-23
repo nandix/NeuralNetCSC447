@@ -19,7 +19,7 @@ NeuralNet::NeuralNet( int nLayers, vector<int> nPerLayer )
 	// Seed our random number generator
     srand( time(NULL) );
 	initRange = 0.2;
-	steepness = 5.0;
+	steepness = 2.0;
 	learningRate = 0.4;
 	momentum = 0.8;
 
@@ -531,7 +531,7 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 
 	for(int i=0;i<data.size();i++)
 	{
-		cout << "Sample " << i << " ";
+		// cout << "Sample " << i << " ";
 		for(int j=0;j<data[i].size();j++)
 		{
 			if(j == 0)
@@ -553,7 +553,7 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 			
 		}
 
-		cout << endl;
+		// cout << endl;
 	}
 
 	//keep track of min and max and then walk through all the data and normalize.
