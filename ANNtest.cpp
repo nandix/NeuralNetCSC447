@@ -39,8 +39,6 @@ int main(int argc, char const *argv[])
 	int nLayers = net.numLayers;
 	int row, column;
 	int lastYearIndex;
-	float errorThreshold = net.threshold;
-	float epochThreshold = net.epochs;
 	int nSamples;
 
 	//Size of the input and output layers
@@ -48,7 +46,6 @@ int main(int argc, char const *argv[])
 	float outSize = net.numOutputClasses;
 
 	ifstream fin;
-	ofstream fout;
 
 	float weight=0;
 	fin.open(net.weightFilename.c_str());
@@ -97,19 +94,38 @@ int main(int argc, char const *argv[])
 	vector<vector< float > > outputs(nSamples, vector<float>(outSize));
 
 	lastYearIndex = data.size() - 1;
+	row = lastYearIndex;
 
 	//Populate the input vectors
 	for (int i = 0; i < nSamples; i++)
 	{
+
 		column = net.endMonth;
-		row = lastYearIndex;
+		row = lastYearIndex - i;
 
 		for (int j = 0; j < net.yearsBurned; j++)
-			inputs[i][j] = data[lastYearIndex - i][0];
+		{
+			inputs[i][j] = data[lastYearIndex - i - j - 1][0];
 
-		for (int j = 1; j < inSize; j++)
+			float unNormalizeConst = (net.burnMax - net.burnMin);
+			if( inputs[i][j]*unNormalizeConst + net.burnMin < net.mediumCutoff )
+			{
+				outputs[i][0] = 1;
+			}
+			else if( inputs[i][j]*unNormalizeConst + net.burnMin < net.highCutoff )
+			{
+				outputs[i][1] = 1;
+			}
+			else
+			{
+				outputs[i][2] = 1;
+			}
+		}
+
+		for (int j = net.yearsBurned ; j < inSize; j++)
 		{
 			inputs[i][j] = data[row][column];
+
 			if (--column < 1)
 			{
 				column = 12;
@@ -118,10 +134,15 @@ int main(int argc, char const *argv[])
 		}
 	}
 
-	//net.printNetwork();
-
-	float errorProp = 1.0;
-	int epochNum = 0;
+	for( int i=0; i < inputs.size(); i++ )
+	{
+		cout << "Input " << i << ": ";
+		for( int j=0; j < inputs.size(); j++ )
+		{
+			cout << inputs[i][j] << " ";
+		}
+		cout << endl;
+	}
 
 	vector<int> sampleIndicies(inputs.size());
 	for(int i=0; i < inputs.size(); i++)
@@ -129,137 +150,65 @@ int main(int argc, char const *argv[])
 		sampleIndicies[i] = i;
 	}
 
-	// While our network is not well trained and we haven't reached
-	//	the maximum number of epochs...
-	vector< vector<float> > results;
-	while( /*fabs(errorProp) > errorThreshold &&*/ epochNum < epochThreshold )
+	float numWrong = 0;
+	for( int i=0; i < inputs.size(); i++ )
 	{
-		// cout << "Current error: " << errorProp << endl;
-		// Begin another epoch!
-		float totalError = 0.0;
-		// Use the training data in random order
-		vector<int> shuffledIndicies = sampleIndicies;
-		random_shuffle( shuffledIndicies.begin(), shuffledIndicies.end() );
-
-		// Output shuffled order of sample indicies
-		// cout << "Shuffled indicies: " << endl;
-		// for( int i=0; i < shuffledIndicies.size(); i++ )
-		// 	cout << shuffledIndicies[i] << " " << sampleIndicies[i] << endl;
-		// cout << endl;
-
-		// Loop over the input data
-		//vector< vector<float> > results;
-
-		vector< float > errors;
-
-		for (int i = 0; i < inputs.size(); ++i)
-		{
-			// Easier to type than shuffledIndicies[i]...
-			int curIndex =  shuffledIndicies[i];
-
-			// cout << "Testing index " << curIndex << endl;
-			// Run the training data
-			results = net.evaluateNet( inputs[curIndex], outputs[curIndex] );
-
-
-			// cout << "Resultss: " << endl;
-			// for( int Q = 0; Q < results.size(); Q++ )
-			// {
-			// 	for( int P=0; P < results[Q].size(); P++)
-			// 	{
-			// 		cout << results[Q][P] << " ";
-			// 	}
-			// 	cout << endl;
-			// }
-
-			// cout << "Evaluated net" << endl;
-			errors.resize( results[nLayers-1].size(), 0.0 );
-
-			for(int outNode=0; outNode < results[nLayers-1].size(); outNode++)
-			{
-				float tempError = outputs[curIndex][outNode] - results[nLayers-1][outNode];
-				errors[outNode] = tempError;
-				totalError += tempError * tempError;
-
-			}
-
-			// cout << "Desired  Computed Error" << endl;
-			// for( int outNode=0; outNode < errors.size(); outNode++)
-			// {
-				// cout << outputs[curIndex][outNode] << "  " << results[nLayers-1][outNode] << "  " << errors[outNode] << endl;
-			// }
-
-			// cout << "Computed errors" << endl;
-
-
-			net.trainNetwork(errors, results);
-
-			// cout << "Trained network" << endl;
-
-		}
-
-		errorProp = totalError / (results.size() * inputs.size());
-		errorProp = sqrt( errorProp );
-		//cout << epochNum << "  Error Proportion: " << errorProp << endl;
-		if(epochNum%10 == 0)
-		{
-			cout << "Epoch" << setw(6) << epochNum << ": RMS Error = " << setprecision(3) << errorProp << endl;
-		}
-
-		// break;
-		epochNum++;
-	}
-
-	fout.open(net.weightFilename.c_str());
-	for( int layer = 1; layer < net.numLayers; layer++ )
-	{
-		// Resize the layer for the correct number of nodes.
-		net.networkWeights[ layer-1 ].resize( net.nodesPerLayer[layer] + 1 );
-
-		// Initialize for each node in that layer
-		int node;
-		for( node = 0; node < net.nodesPerLayer[layer]; node++ )
-		{
-			// Initialize the correct number of input weights, plus 1 for the bias input
-			net.networkWeights[ layer-1 ][ node ].resize( net.nodesPerLayer[layer-1] + 1 );
-
-			// For each node in the layer, initialize the input weights
-			for( int wNum = 0; wNum <= net.nodesPerLayer[layer-1]; wNum++ )
-			{
-				// Initalize to small random values
-				fout << net.networkWeights[ layer-1 ][ node ][ wNum ] << " ";
-			}
-		}
-	}
-	fout.close();
-
-	/*for(int i=0;i<results.size();i++)
-	{
-		for(int j=0;j<results[i].size();j++)
-		{
-			cout << i << ": " << results[i][j] << " :: ";
-		}
-		cout << endl;
-	}*/
-
-	/*for( int i=0; i < inputs.size(); i++ )
-	{
+		cout << "Sample " << i << ": ";
 		vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
-		cout << "In | Out | Net: " << inputs[i][0] << " " << inputs[i][1] << " | "
-				<< outputs[i][0] << " | " << results[nLayers-1][0] << endl;
 
-	}*/
-	// for( int i=0; i < inputs.size(); i++ )
-	// {
-	// 	vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
-	// 	cout << "In | Out | Net: " << inputs[i][0] << " | "
-	// 			<< outputs[i][0] << " | " << results[nLayers-1][0] << endl;
+		int predictedIndex = -1;
+		float maxPrediction = 0;
+		vector<int> firePrediction;
+		for( int j=0; j < results[nLayers-1].size(); j++ )
+		{
+			if( results[nLayers-1][j] > maxPrediction )
+			{
+				predictedIndex = j;
+				maxPrediction = results[nLayers-1][j];
+			}
 
-	// }
+		}
 
-	//net.printNetwork();
+		for( int j=0; j < results[nLayers-1].size(); j++ )
+		{
+			if( j != predictedIndex )
+			{
+				firePrediction.push_back(0);
+			}
+			else
+			{
+				firePrediction.push_back(1);
+			}
+		}
+		
+		cout << "Traning Output: ";
+		for( int j=0; j < outputs[i].size(); j++ )
+		{
+			cout  <<  outputs[i][j];
 
+		}
 
-	//cout << "The program actually finished" << endl;
+		cout << "   Prediction: ";
+		for( int j=0; j < firePrediction.size(); j++ )
+		{
+			cout << firePrediction[j];
+		}
+
+		for( int j=0; j < firePrediction.size(); j++ )
+		{
+			if( firePrediction[j] != outputs[i][j])
+			{
+				cout << " WRONG";
+				numWrong ++;
+				break;
+			}
+		}
+
+		cout << endl;
+	}
+
+	cout << "\nNet correctly predicted " << float(nSamples - numWrong)/nSamples *100
+			<< "% of samples" << endl;
+
 	return 0;
 }

@@ -90,7 +90,7 @@ int main(int argc, char const *argv[])
 	if (yearsPerSample >= net.yearsBurned)
 		nSamples = data.size() - yearsPerSample + 1;
 	else
-		nSamples = data.size() - net.yearsBurned + 1;
+		nSamples = data.size() - net.yearsBurned;
 
 
 	vector<vector< float > > inputs(nSamples, vector<float>(inSize));
@@ -173,7 +173,7 @@ int main(int argc, char const *argv[])
 	// While our network is not well trained and we haven't reached
 	//	the maximum number of epochs...
 	vector< vector<float> > results;
-	while( /*fabs(errorProp) > errorThreshold &&*/ epochNum < epochThreshold )
+	while( fabs(errorProp) > errorThreshold && epochNum < epochThreshold )
 	{
 		// cout << "Current error: " << errorProp << endl;
 		// Begin another epoch!
