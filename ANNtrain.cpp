@@ -122,7 +122,7 @@ int main(int argc, char const *argv[])
 
 		for (int j = 0; j < net.yearsBurned; j++)
 		{
-			inputs[i][j] = data[lastYearIndex - i - j][0];
+			inputs[i][j] = data[lastYearIndex - i - j - 1][0];
 
 			float unNormalizeConst = (net.burnMax - net.burnMin);
 			if( inputs[i][j]*unNormalizeConst + net.burnMin < net.mediumCutoff )
@@ -139,7 +139,7 @@ int main(int argc, char const *argv[])
 			}
 		}
 
-		for (int j = net.yearsBurned - 1; j < inSize; j++)
+		for (int j = net.yearsBurned ; j < inSize; j++)
 		{
 			inputs[i][j] = data[row][column];
 
@@ -151,7 +151,15 @@ int main(int argc, char const *argv[])
 		}
 	}
 
-	//net.printNetwork();
+	for( int i=0; i < inputs.size(); i++ )
+	{
+		cout << "Input " << i << ": ";
+		for( int j=0; j < inputs.size(); j++ )
+		{
+			cout << inputs[i][j] << " ";
+		}
+		cout << endl;
+	}
 
 	float errorProp = 1.0;
 	int epochNum = 0;
@@ -275,62 +283,89 @@ int main(int argc, char const *argv[])
 		cout << endl;
 	}*/
 
+	float numWrong = 0;
 	for( int i=0; i < inputs.size(); i++ )
 	{
+		cout << "Sample " << i << ": ";
 		vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
 
 		int predictedIndex = -1;
-		int maxPrediction = 0;
+		float maxPrediction = 0;
+		vector<int> firePrediction;
 		for( int j=0; j < results[nLayers-1].size(); j++ )
 		{
 			if( results[nLayers-1][j] > maxPrediction )
 			{
+				// cout << "Updated max prediction " << maxPrediction << " with value " << results[nLayers-1][j] << endl;
 				predictedIndex = j;
+				maxPrediction = results[nLayers-1][j];
 			}
 
 		}
+
 		for( int j=0; j < results[nLayers-1].size(); j++ )
 		{
 			if( j != predictedIndex )
 			{
-				results[nLayers-1][j] = 0;
+				firePrediction.push_back(0);
 			}
 			else
 			{
-				results[nLayers-1][j] = 1;
+				firePrediction.push_back(1);
 			}
 		}
 
-		cout << "Sample " << i << ":" << endl;
+		// cout << "Sample " << i << ":" << endl;
 
-		cout << "   Inputs :";
-		for( int j=0; j < inputs[i].size(); j++ )
-		{
-			cout << "  " <<  inputs[i][j];
+		// cout << "   Inputs :";
+		// for( int j=0; j < inputs[i].size(); j++ )
+		// {
+		// 	cout << "  " <<  inputs[i][j];
 
-		}
-		cout << endl;
+		// }
+		// cout << endl;
 		
-		cout << "   outputs:";
+		cout << "Traning Output: ";
 		for( int j=0; j < outputs[i].size(); j++ )
 		{
-			cout << "  " <<  outputs[i][j];
+			cout  <<  outputs[i][j];
 
 		}
-		cout << endl;
+		// cout << endl;
 		
-		cout << "   Results:";
-		for( int j=0; j < results[nLayers-1].size(); j++ )
-		{
-			cout << "  " <<  results[nLayers-1][j];
+		// cout << "   Results:";
+		// for( int j=0; j < results[nLayers-1].size(); j++ )
+		// {
+		// 	cout << "  " <<  results[nLayers-1][j];
 
+		// }
+		cout << "   Prediction: ";
+		for( int j=0; j < firePrediction.size(); j++ )
+		{
+			cout << firePrediction[j];
 		}
+
+		for( int j=0; j < firePrediction.size(); j++ )
+		{
+			if( firePrediction[j] != outputs[i][j])
+			{
+				cout << " WRONG";
+				numWrong ++;
+				break;
+			}
+		}
+
 		cout << endl;
+
+
 
 		// cout << "In | Out | Net: " << inputs[i][0] << " " << inputs[i][1] << " | "
 		// 		<< outputs[i][0] << " | " << results[nLayers-1][0] << endl;
 
 	}
+
+	cout << "\nNet correctly predicted " << float(nSamples - numWrong)/nSamples *100
+			<< "% of samples" << endl;
 	// for( int i=0; i < inputs.size(); i++ )
 	// {
 	// 	vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
@@ -339,8 +374,8 @@ int main(int argc, char const *argv[])
 
 	// }
 
-	net.printNetwork();
-	cout << "BURN BABY BURN: " << net.burnMin << " " << net.burnMax << endl;
+	// net.printNetwork();
+	// cout << "BURN BABY BURN: " << net.burnMin << " " << net.burnMax << endl;
 
 
 
