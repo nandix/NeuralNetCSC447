@@ -156,7 +156,8 @@ void NeuralNet::printNetwork()
 /*******************************************************************************
 * Function: initWeight()
 *
-* Description: This function simply returns a random value.
+* Description: This function simply returns a random value between +initRange
+*				and -initRange.
 *
 *******************************************************************************/
 // Initialize a weight to a small value
@@ -172,11 +173,19 @@ float NeuralNet::initWeight()
 /*******************************************************************************
 * Function: EvaluateNet()
 *
-* Description: This function evaluates the net.
+* Description: This function evaluates the net. It feeds input data into the
+*				input layer, computes the activation function for each node 
+*				in the next layer, and sets this output as the input to the
+*				next layer of nodes. It stores output from all layers for use
+*				when applying the generalized delta learning rule and returns
+*				this vector for later use.
 *
 * Parameters:
 *   inputs    - This represents the first layer in the neural net
 *   nPerLayer - This is a vector that contains the number of nodes in each layer
+*
+* Returns:
+*	perceptronOutputs - 2D vector containin output from all nodes in each layer
 *
 *******************************************************************************/
 vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< float > outputs )
@@ -194,12 +203,6 @@ vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< 
 		vector<float> tempIn = tempOut;
 		tempIn.push_back(1.0);
 
-		// cout << "Inputs from layer " << layer << endl;
-		// for( int tIn = 0; tIn < tempIn.size(); tIn++ )
-		// {
-		// 	cout << " " << tempIn[tIn];
-		// }
-		// cout << endl << endl;
 
 		// Store perceptron output from previous layers for training
 		perceptronOutputs.push_back( tempIn );
@@ -210,8 +213,6 @@ vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< 
 		{
 			tempOut[tt] = 0.0;
 		}
-
-		// cout << "Generated " << nodesPerLayer[i+1] << " nodes" << endl;
 
 		// For each node in that layer
 		for( int to=0; to < nodesPerLayer[layer+1]; to++ )
@@ -224,7 +225,6 @@ vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< 
 
 			tempOut[to] = activationFunction( tempOut[to] );
 		}
-		// cout << "SIZE: " << tempOut.size() << endl;
 	}
 
 	// Push the final
@@ -236,7 +236,10 @@ vector< vector<float> > NeuralNet::evaluateNet( vector< float > inputs, vector< 
 /*******************************************************************************
 * Function: trainNetwork()
 *
-* Description: This trains the network..
+* Description: Applies the generalized delta learning rule to the network based
+*				on the errors when the network is evaluated. It backpropogates
+*				these errors so that weights may be updated in all layers so the
+*				network is able to train to a nonlinear function.
 *
 * Parameters:
 *   nLayers -   The number of layers in the net
@@ -270,10 +273,6 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 	}
 
 
-
-	// Compute initial weight update values
-	//	w_jk
-
 	// Store delta values for back propogation
 	vector< float > deltaK( nodesPerLayer[numLayers-1] );
 
@@ -283,7 +282,6 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 	// k = to
 	for( int to=0; to < nodesPerLayer[numLayers-1]; to++ )
 	{
-		// cout << "to = " << to << endl;
 		// Assign output to node k from node j as yK for readable code
 		float yK = results[numLayers-1][to];
 
@@ -313,21 +311,17 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 		vector< float > deltaJ( nodesPerLayer[layer], 0.0 );
 
 		// For each node in the current layer
-		//j=to
 		for( int to=0; to < nodesPerLayer[layer]; to++ )
 		{
 			// Compute the summation
 			float sigma = 0;
 
 			// Evaluate
-			// cout << "Summing ";
 			for( int k=0; k < nodesPerLayer[layer+1]; k++ )
 			{
 				// cout << "layer: " << layer << " to: " << to << " k: " << k << endl;
 				float wJK = networkWeights[layer][k][to];
 
-				// cout << " " << wJK << "+" << deltaK[k] << "   +  ";
-				// cout << "FUUUUUCCCCKKK CODE" << endl;
 				sigma += wJK * deltaK[k];
 			}
 			// cout << endl << "Sigma = " << sigma << endl;
@@ -344,16 +338,12 @@ void NeuralNet::trainNetwork(vector<float> errors, vector< vector<float> > resul
 			{
 				// cout << "Updating layer " << layer << " from " << from << " to " << to << endl;
 				float yI = results[layer-1][from];
-				// cout << "yI = " << yI << endl;
-				// cout << "Code" << endl;
 				// Store updated deltas to update weights later
 				float tempDelta = deltaJ[to];
-				// cout << " is " << endl;
+
 				float tempCalc = learningRate * yI * tempDelta;
-				// cout << "effing" << endl;
+
 				updateDeltas[layer-1][to][from] = tempCalc;
-				// cout << "updateDeltas to " << to << " from " << from << " = " << tempCalc << endl;
-				// cout << "dumb" << endl;
 			}
 
 			// Move the stored delta values back one layer to continue
@@ -545,17 +535,9 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 				data[i][j] = (data[i][j] - min)/(max - min);
 			}
 
-			// if( data[i][j] < 0 || data[i][j] > 1 )
-			// {
-			// 	cout << "BAD NORMALIZATION: (" << i << ", " << j << ") : " << data[i][j] << endl;
-			// 	cout << "Params: " << burnMin << " " << burnMax << " " << min << " " << max << endl;
-			// }
-
-			// cout << data[i][j] << " ";
 			
 		}
 
-		// cout << endl;
 	}
 
 	//keep track of min and max and then walk through all the data and normalize.
