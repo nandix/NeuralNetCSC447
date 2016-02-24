@@ -145,6 +145,7 @@ int main(int argc, char const *argv[])
 
 	float errorProp = 1.0;
 	int epochNum = 0;
+	float errorCutoff = 1.0;
 
 	vector<int> sampleIndicies(inputs.size());
 	for(int i=0; i < inputs.size(); i++)
@@ -155,6 +156,7 @@ int main(int argc, char const *argv[])
 	// While our network is not well trained and we haven't reached
 	//	the maximum number of epochs...
 	vector< vector<float> > results;
+
 	while( fabs(errorProp) > errorThreshold && epochNum < epochThreshold )
 	{
 		// cout << "Current error: " << errorProp << endl;
@@ -198,6 +200,13 @@ int main(int argc, char const *argv[])
 			cout << "Epoch" << setw(6) << epochNum << ": RMS Error = " << setprecision(3) << errorProp << endl;
 		}
 
+		if (epochNum % 300 == 0)
+		{
+			if (errorCutoff - errorProp < 0.0002)
+				break;
+
+			errorCutoff = errorProp;
+		}
 		epochNum++;
 	}
 
@@ -224,7 +233,9 @@ int main(int argc, char const *argv[])
 	}
 	fout.close();
 
-	/*float numWrong = 0;
+	/*
+	float numWrongPerSeverity[3] = {0};
+	float numPerSeverity[3] = {0};
 	for( int i=0; i < inputs.size(); i++ )
 	{
 		cout << "Sample " << i << ": ";
@@ -255,9 +266,11 @@ int main(int argc, char const *argv[])
 			}
 		}
 		
-		cout << "Traning Output: ";
+		cout << "Training Output: ";
 		for( int j=0; j < outputs[i].size(); j++ )
 		{
+			if (outputs[i][j] == 1)
+				numPerSeverity[j]++;
 			cout  <<  outputs[i][j];
 
 		}
@@ -272,8 +285,13 @@ int main(int argc, char const *argv[])
 		{
 			if( firePrediction[j] != outputs[i][j])
 			{
+				if (outputs[i][0] == 1)
+					numWrongPerSeverity[0]++;
+				else if (outputs[i][1] == 1)
+					numWrongPerSeverity[1]++;
+				else
+					numWrongPerSeverity[2]++;
 				cout << " WRONG";
-				numWrong ++;
 				break;
 			}
 		}
@@ -281,7 +299,11 @@ int main(int argc, char const *argv[])
 		cout << endl;
 	}
 
-	cout << "\nNet correctly predicted " << float(nSamples - numWrong)/nSamples *100
+	cout << "Low samples predicted correctly: " << (numPerSeverity[0] - numWrongPerSeverity[0])/numPerSeverity[0] *100
+			<< "% of samples" << endl;	
+	cout << "Medium samples predicted correctly: "<< (numPerSeverity[1] - numWrongPerSeverity[1])/numPerSeverity[1] *100
+			<< "% of samples" << endl;	
+	cout << "High samples predicted correctly: " << (numPerSeverity[2] - numWrongPerSeverity[2])/numPerSeverity[2] *100
 			<< "% of samples" << endl;*/
 	return 0;
 }
