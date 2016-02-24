@@ -33,6 +33,11 @@ using namespace std;
 int main(int argc, char const *argv[])
 {
 	// Will be read in from a file in the final program
+	if( argc != 2)
+	{
+		cout << "Usage: ./ANNtest params.prm\n";
+		return -2;
+	}
 
 	NeuralNet net( argv[1] );
 
@@ -73,6 +78,12 @@ int main(int argc, char const *argv[])
 				}
 			}
 		}
+	}
+	else
+	{
+		cout << "Could not find weights file.  Please make sure the weights file exists." << endl;
+		fin.close();
+		return -1;
 	}
 	fin.close();
 
@@ -134,16 +145,6 @@ int main(int argc, char const *argv[])
 		}
 	}
 
-	for( int i=0; i < inputs.size(); i++ )
-	{
-		cout << "Input " << i << ": ";
-		for( int j=0; j < inputs.size(); j++ )
-		{
-			cout << inputs[i][j] << " ";
-		}
-		cout << endl;
-	}
-
 	vector<int> sampleIndicies(inputs.size());
 	for(int i=0; i < inputs.size(); i++)
 	{
@@ -153,7 +154,7 @@ int main(int argc, char const *argv[])
 	float numWrong = 0;
 	for( int i=0; i < inputs.size(); i++ )
 	{
-		cout << "Sample " << i << ": ";
+		cout << i+1 << ",";
 		vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
 
 		int predictedIndex = -1;
@@ -181,14 +182,12 @@ int main(int argc, char const *argv[])
 			}
 		}
 		
-		cout << "Traning Output: ";
 		for( int j=0; j < outputs[i].size(); j++ )
 		{
 			cout  <<  outputs[i][j];
-
 		}
 
-		cout << "   Prediction: ";
+		cout << ",";
 		for( int j=0; j < firePrediction.size(); j++ )
 		{
 			cout << firePrediction[j];
@@ -198,7 +197,7 @@ int main(int argc, char const *argv[])
 		{
 			if( firePrediction[j] != outputs[i][j])
 			{
-				cout << " WRONG";
+				cout << ",*";
 				numWrong ++;
 				break;
 			}
@@ -207,8 +206,8 @@ int main(int argc, char const *argv[])
 		cout << endl;
 	}
 
-	cout << "\nNet correctly predicted " << float(nSamples - numWrong)/nSamples *100
-			<< "% of samples" << endl;
+	cout << "\naccuracy: " << float(nSamples - numWrong)/nSamples *100
+			<< " %" << endl;
 
 	return 0;
 }

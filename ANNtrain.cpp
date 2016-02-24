@@ -33,6 +33,11 @@ using namespace std;
 int main(int argc, char const *argv[])
 {
 	// Will be read in from a file in the final program
+	if( argc != 2)
+	{
+		cout << "Usage: ./ANNtrain params.prm\n";
+		return -2;
+	}
 
 	NeuralNet net( argv[1] );
 
@@ -98,19 +103,6 @@ int main(int argc, char const *argv[])
 
 	lastYearIndex = data.size() - 1;
 
-
-	// cout << "DATA: " << endl;
-	// for( int i=0; i < data.size(); i++ )
-	// {
-	// 	for( int j=0; j < data[i].size(); j++ )
-	// 	{
-	// 		cout << " " << data[i][j];
-	// 	}
-	// 	cout << endl;
-	// }
-	// cout << endl;
-
-
 	row = lastYearIndex;
 
 	//Populate the input vectors
@@ -151,16 +143,6 @@ int main(int argc, char const *argv[])
 		}
 	}
 
-	for( int i=0; i < inputs.size(); i++ )
-	{
-		cout << "Input " << i << ": ";
-		for( int j=0; j < inputs.size(); j++ )
-		{
-			cout << inputs[i][j] << " ";
-		}
-		cout << endl;
-	}
-
 	float errorProp = 1.0;
 	int epochNum = 0;
 
@@ -182,14 +164,7 @@ int main(int argc, char const *argv[])
 		vector<int> shuffledIndicies = sampleIndicies;
 		random_shuffle( shuffledIndicies.begin(), shuffledIndicies.end() );
 
-		// Output shuffled order of sample indicies
-		// cout << "Shuffled indicies: " << endl;
-		// for( int i=0; i < shuffledIndicies.size(); i++ )
-		// 	cout << shuffledIndicies[i] << " " << sampleIndicies[i] << endl;
-		// cout << endl;
-
 		// Loop over the input data
-		//vector< vector<float> > results;
 
 		vector< float > errors;
 
@@ -202,17 +177,6 @@ int main(int argc, char const *argv[])
 			// Run the training data
 			results = net.evaluateNet( inputs[curIndex], outputs[curIndex] );
 
-
-			// cout << "Resultss: " << endl;
-			// for( int Q = 0; Q < results.size(); Q++ )
-			// {
-			// 	for( int P=0; P < results[Q].size(); P++)
-			// 	{
-			// 		cout << results[Q][P] << " ";
-			// 	}
-			// 	cout << endl;
-			// }
-
 			// cout << "Evaluated net" << endl;
 			errors.resize( results[nLayers-1].size(), 0.0 );
 
@@ -224,30 +188,16 @@ int main(int argc, char const *argv[])
 
 			}
 
-			// cout << "Desired  Computed Error" << endl;
-			// for( int outNode=0; outNode < errors.size(); outNode++)
-			// {
-				// cout << outputs[curIndex][outNode] << "  " << results[nLayers-1][outNode] << "  " << errors[outNode] << endl;
-			// }
-
-			// cout << "Computed errors" << endl;
-
-
 			net.trainNetwork(errors, results);
-
-			// cout << "Trained network" << endl;
-
 		}
 
 		errorProp = totalError / (results.size() * inputs.size());
 		errorProp = sqrt( errorProp );
-		//cout << epochNum << "  Error Proportion: " << errorProp << endl;
 		if(epochNum%10 == 0)
 		{
 			cout << "Epoch" << setw(6) << epochNum << ": RMS Error = " << setprecision(3) << errorProp << endl;
 		}
 
-		// break;
 		epochNum++;
 	}
 
@@ -274,16 +224,7 @@ int main(int argc, char const *argv[])
 	}
 	fout.close();
 
-	/*for(int i=0;i<results.size();i++)
-	{
-		for(int j=0;j<results[i].size();j++)
-		{
-			cout << i << ": " << results[i][j] << " :: ";
-		}
-		cout << endl;
-	}*/
-
-	float numWrong = 0;
+	/*float numWrong = 0;
 	for( int i=0; i < inputs.size(); i++ )
 	{
 		cout << "Sample " << i << ": ";
@@ -296,7 +237,6 @@ int main(int argc, char const *argv[])
 		{
 			if( results[nLayers-1][j] > maxPrediction )
 			{
-				// cout << "Updated max prediction " << maxPrediction << " with value " << results[nLayers-1][j] << endl;
 				predictedIndex = j;
 				maxPrediction = results[nLayers-1][j];
 			}
@@ -314,16 +254,6 @@ int main(int argc, char const *argv[])
 				firePrediction.push_back(1);
 			}
 		}
-
-		// cout << "Sample " << i << ":" << endl;
-
-		// cout << "   Inputs :";
-		// for( int j=0; j < inputs[i].size(); j++ )
-		// {
-		// 	cout << "  " <<  inputs[i][j];
-
-		// }
-		// cout << endl;
 		
 		cout << "Traning Output: ";
 		for( int j=0; j < outputs[i].size(); j++ )
@@ -331,14 +261,7 @@ int main(int argc, char const *argv[])
 			cout  <<  outputs[i][j];
 
 		}
-		// cout << endl;
-		
-		// cout << "   Results:";
-		// for( int j=0; j < results[nLayers-1].size(); j++ )
-		// {
-		// 	cout << "  " <<  results[nLayers-1][j];
 
-		// }
 		cout << "   Prediction: ";
 		for( int j=0; j < firePrediction.size(); j++ )
 		{
@@ -356,29 +279,9 @@ int main(int argc, char const *argv[])
 		}
 
 		cout << endl;
-
-
-
-		// cout << "In | Out | Net: " << inputs[i][0] << " " << inputs[i][1] << " | "
-		// 		<< outputs[i][0] << " | " << results[nLayers-1][0] << endl;
-
 	}
 
 	cout << "\nNet correctly predicted " << float(nSamples - numWrong)/nSamples *100
-			<< "% of samples" << endl;
-	// for( int i=0; i < inputs.size(); i++ )
-	// {
-	// 	vector< vector<float> > results = net.evaluateNet( inputs[i], outputs[i] );
-	// 	cout << "In | Out | Net: " << inputs[i][0] << " | "
-	// 			<< outputs[i][0] << " | " << results[nLayers-1][0] << endl;
-
-	// }
-
-	// net.printNetwork();
-	// cout << "BURN BABY BURN: " << net.burnMin << " " << net.burnMax << endl;
-
-
-
-	//cout << "The program actually finished" << endl;
+			<< "% of samples" << endl;*/
 	return 0;
 }

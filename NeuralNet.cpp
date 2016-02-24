@@ -491,6 +491,7 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 
 	for(int i=0;i<data.size();i++)
 	{
+		years.push_back(data[i][0]);
 		data[i].erase(data[i].begin());
 	}
 
@@ -504,6 +505,7 @@ vector< vector<float> > NeuralNet::readDataFile(string dataFilename)
 		{
 			if(j == 0)
 			{
+				burnedAcreage.push_back(data[i][j]);
 				if(data[i][j] < burnMin)
 				{
 					burnMin = data[i][j];

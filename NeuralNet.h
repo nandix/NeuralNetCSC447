@@ -52,7 +52,9 @@ public:
 	int endMonth;				//the last usable month of the current year
 	int numOutputClasses;		//number of output classes
 	float mediumCutoff;			//minimum burned acreage to be considered medium
-	float highCutoff;				//minimum burned acreage to be considered high
+	float highCutoff;			//minimum burned acreage to be considered high
+	vector<float> years;		//a vector containing all the years from the data file.
+	vector<float> burnedAcreage; //vector of all burned acreages
 
 	float burnMin;
 	float burnMax;
