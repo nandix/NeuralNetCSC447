@@ -151,7 +151,36 @@ int main(int argc, char const *argv[])
 		sampleIndicies[i] = i;
 	}
 
-	float numWrong = 0;
+	vector< vector<float> > results;
+	vector< float > errors;
+	float totalError = 0.0;
+	float errorProp = 1.0;
+
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		// Easier to type than shuffledIndicies[i]...
+		int curIndex =  i;
+
+		// cout << "Testing index " << curIndex << endl;
+		// Run the training data
+		results = net.evaluateNet( inputs[curIndex], outputs[curIndex] );
+
+		// cout << "Evaluated net" << endl;
+		errors.resize( results[nLayers-1].size(), 0.0 );
+
+		for(int outNode=0; outNode < results[nLayers-1].size(); outNode++)
+		{
+			float tempError = outputs[curIndex][outNode] - results[nLayers-1][outNode];
+			errors[outNode] = tempError;
+			totalError += tempError * tempError;
+
+		}
+	}
+
+	
+
+	float numWrongPerSeverity[3] = {0};
+	float numPerSeverity[3] = {0};
 	for( int i=0; i < inputs.size(); i++ )
 	{
 		cout << i+1 << ",";
@@ -184,6 +213,8 @@ int main(int argc, char const *argv[])
 		
 		for( int j=0; j < outputs[i].size(); j++ )
 		{
+			if (outputs[i][j] == 1)
+				numPerSeverity[j]++;
 			cout  <<  outputs[i][j];
 		}
 
@@ -197,8 +228,13 @@ int main(int argc, char const *argv[])
 		{
 			if( firePrediction[j] != outputs[i][j])
 			{
+				if (outputs[i][0] == 1)
+					numWrongPerSeverity[0]++;
+				else if (outputs[i][1] == 1)
+					numWrongPerSeverity[1]++;
+				else
+					numWrongPerSeverity[2]++;
 				cout << ",*";
-				numWrong ++;
 				break;
 			}
 		}
@@ -206,8 +242,19 @@ int main(int argc, char const *argv[])
 		cout << endl;
 	}
 
-	cout << "\naccuracy: " << float(nSamples - numWrong)/nSamples *100
-			<< " %" << endl;
+
+	errorProp = totalError / (results.size() * inputs.size());
+	errorProp = sqrt( errorProp );
+	cout << setprecision(3) << "\nRMS error: " << errorProp << endl;
+	cout << "Low samples predicted correctly: " << (numPerSeverity[0] - numWrongPerSeverity[0])/numPerSeverity[0] *100
+			<< "% of samples" << endl;	
+	cout << "Medium samples predicted correctly: "<< (numPerSeverity[1] - numWrongPerSeverity[1])/numPerSeverity[1] *100
+			<< "% of samples" << endl;	
+	cout << "High samples predicted correctly: " << (numPerSeverity[2] - numWrongPerSeverity[2])/numPerSeverity[2] *100
+			<< "% of samples" << endl;
+
+	float totalWrong = numWrongPerSeverity[0] + numWrongPerSeverity[1] + numWrongPerSeverity[2];
+	cout << "\nOverall Accuracy: " << (nSamples - totalWrong) / nSamples * 100 << "% of samples" << endl;
 
 	return 0;
 }
